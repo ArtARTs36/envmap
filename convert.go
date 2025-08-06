@@ -46,7 +46,7 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 			prefix += envPrefix
 		}
 
-		if fv := rv.Field(i); fv.Kind() == reflect.Struct {
+		if fv := rv.Field(i); fv.Kind() == reflect.Struct { //nolint: nestif // this is a way
 			err := convert(fv.Interface(), prefix, emap)
 			if err != nil {
 				return fmt.Errorf("converting field %s: %v", field.Name, err)
