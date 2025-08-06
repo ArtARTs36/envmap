@@ -14,8 +14,9 @@ func TestConvert(t *testing.T) {
 	}
 
 	type testCfg1 struct {
-		Mode string `env:"MODE"`
-		DB   dbCfg1 `envPrefix:"DB_"`
+		Mode       string `env:"MODE"`
+		DB         dbCfg1 `envPrefix:"DB_"`
+		EmptyField string `env:"EMPTY_FIELD"`
 	}
 
 	cases := []struct {

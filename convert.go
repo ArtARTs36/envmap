@@ -55,7 +55,12 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 			envKey = prefix + envKey
 
 			if envKey != "" {
-				emap.add(envKey, fmt.Sprintf("%v", valueToString(rv.Field(i).Interface())))
+				value := valueToString(rv.Field(i).Interface())
+				if value == "" {
+					continue
+				}
+
+				emap.add(envKey, fmt.Sprintf("%v", value))
 			}
 		}
 	}
