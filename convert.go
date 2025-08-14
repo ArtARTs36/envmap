@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/fatih/structtag"
 )
 
 func MustConvert(v interface{}, opt ...Opt) map[string]string {
@@ -39,29 +41,44 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 
 	rt := rv.Type()
 	for i := 0; i < rt.NumField(); i++ {
+		innerPrefix := prefix
+
 		field := rt.Field(i)
-		envKey := field.Tag.Get("env")
 
 		if envPrefix := field.Tag.Get("envPrefix"); envPrefix != "" {
-			prefix += envPrefix
+			innerPrefix += envPrefix
 		}
 
 		if fv := rv.Field(i); fv.Kind() == reflect.Struct { //nolint: nestif // this is a way
-			err := convert(fv.Interface(), prefix, emap)
+			err := convert(fv.Interface(), innerPrefix, emap)
 			if err != nil {
 				return fmt.Errorf("converting field %s: %v", field.Name, err)
 			}
 		} else {
-			envKey = prefix + envKey
+			envTagValue := field.Tag.Get("env")
 
-			if envKey != "" {
-				value := valueToString(rv.Field(i).Interface())
-				if value == "" {
-					continue
-				}
-
-				emap.add(envKey, fmt.Sprintf("%v", value))
+			if envTagValue == "" {
+				continue
 			}
+
+			tags, err := structtag.Parse(string(field.Tag))
+			if err != nil {
+				return fmt.Errorf("parsing struct tag: %v", err)
+			}
+
+			envTag, err := tags.Get("env")
+			if err != nil {
+				return fmt.Errorf("get env from tags: %v", err)
+			}
+
+			envKey := innerPrefix + envTag.Name
+
+			value := valueToString(rv.Field(i).Interface())
+			if value == "" {
+				continue
+			}
+
+			emap.add(envKey, fmt.Sprintf("%v", value))
 		}
 	}
 

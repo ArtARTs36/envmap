@@ -14,9 +14,10 @@ func TestConvert(t *testing.T) {
 	}
 
 	type testCfg1 struct {
-		Mode       string `env:"MODE"`
-		DB         dbCfg1 `envPrefix:"DB_"`
-		EmptyField string `env:"EMPTY_FIELD"`
+		Mode          string `env:"MODE"`
+		DB            dbCfg1 `envPrefix:"DB_"`
+		EmptyField    string `env:"EMPTY_FIELD"`
+		RequiredField int    `env:"REQUIRED_FIELD,required"`
 	}
 
 	cases := []struct {
@@ -37,10 +38,12 @@ func TestConvert(t *testing.T) {
 				DB: dbCfg1{
 					Timeout: time.Second,
 				},
+				RequiredField: 3,
 			},
 			Expected: map[string]string{
-				"APP_MODE":       "prod",
-				"APP_DB_TIMEOUT": "1s",
+				"APP_MODE":           "prod",
+				"APP_DB_TIMEOUT":     "1s",
+				"APP_REQUIRED_FIELD": "3",
 			},
 			Opts: []Opt{
 				WithPrefix("APP_"),
