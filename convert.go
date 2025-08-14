@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/fatih/structtag"
 )
@@ -87,6 +88,17 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 
 func valueToString(value interface{}) string {
 	switch v := value.(type) {
+	case int, int32, int64, uint, uint32, uint64, float32, float64:
+		if v == 0 {
+			return ""
+		}
+		return fmt.Sprintf("%v", v)
+	case time.Duration:
+		if v == 0 {
+			return ""
+		}
+
+		return v.String()
 	case []string:
 		return strings.Join(v, ",")
 	case []interface{}:

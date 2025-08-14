@@ -32,7 +32,15 @@ func TestConvert(t *testing.T) {
 			Expected: map[string]string{},
 		},
 		{
-			Title: "Application config",
+			Title:    "Non-filled application config",
+			Config:   testCfg1{},
+			Expected: map[string]string{},
+			Opts: []Opt{
+				WithPrefix("APP_"),
+			},
+		},
+		{
+			Title: "Filled application config",
 			Config: testCfg1{
 				Mode: "prod",
 				DB: dbCfg1{
@@ -56,6 +64,31 @@ func TestConvert(t *testing.T) {
 			got, err := Convert(c.Config, c.Opts...)
 			require.NoError(t, err)
 			assert.Equal(t, c.Expected, got)
+		})
+	}
+}
+
+func TestValueToString(t *testing.T) {
+	cases := []struct {
+		Title    string
+		Input    interface{}
+		Expected string
+	}{
+		{
+			Title:    "time.Duration: filled",
+			Input:    time.Second,
+			Expected: "1s",
+		},
+		{
+			Title:    "time.Duration: zero",
+			Input:    0 * time.Second,
+			Expected: "",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.Title, func(t *testing.T) {
+			assert.Equal(t, c.Expected, valueToString(c.Input))
 		})
 	}
 }
