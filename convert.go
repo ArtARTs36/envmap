@@ -1,6 +1,7 @@
 package envmap
 
 import (
+	"encoding"
 	"fmt"
 	"reflect"
 	"strings"
@@ -74,7 +75,10 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 
 			envKey := innerPrefix + envTag.Name
 
-			value := valueToString(rv.Field(i).Interface())
+			value, err := valueToString(rv.Field(i).Interface())
+			if err != nil {
+				return fmt.Errorf("converting field %s: %v", field.Name, err)
+			}
 			if value == "" {
 				continue
 			}
@@ -86,28 +90,38 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 	return nil
 }
 
-func valueToString(value interface{}) string {
+func valueToString(value interface{}) (string, error) {
 	switch v := value.(type) {
+	case encoding.TextMarshaler:
+		text, err := v.MarshalText()
+		if err != nil {
+			return "", err
+		}
+		return string(text), nil
 	case int, int32, int64, uint, uint32, uint64, float32, float64:
 		if v == 0 {
-			return ""
+			return "", nil
 		}
-		return fmt.Sprintf("%v", v)
+		return fmt.Sprintf("%v", v), nil
 	case time.Duration:
 		if v == 0 {
-			return ""
+			return "", nil
 		}
 
-		return v.String()
+		return v.String(), nil
 	case []string:
-		return strings.Join(v, ",")
+		return strings.Join(v, ","), nil
 	case []interface{}:
 		vs := make([]string, len(v))
 		for i := range v {
-			vs[i] = valueToString(v[i])
+			var err error
+			vs[i], err = valueToString(v[i])
+			if err != nil {
+				return "", err
+			}
 		}
 
-		return strings.Join(vs, ",")
+		return strings.Join(vs, ","), nil
 	default:
 		if reflect.ValueOf(value).Kind() == reflect.Map {
 			rv := reflect.ValueOf(value)
@@ -115,13 +129,22 @@ func valueToString(value interface{}) string {
 
 			vs := make([]string, 0)
 			for iter.Next() {
-				vs = append(vs, fmt.Sprintf("%s:%s", valueToString(iter.Key()), valueToString(iter.Value())))
+				mk, err := valueToString(iter.Key())
+				if err != nil {
+					return "", err
+				}
+				mv, err := valueToString(iter.Value())
+				if err != nil {
+					return "", err
+				}
+
+				vs = append(vs, fmt.Sprintf("%s:%s", mk, mv))
 			}
 
-			return strings.Join(vs, ",")
+			return strings.Join(vs, ","), nil
 		}
 
-		return fmt.Sprintf("%v", value)
+		return fmt.Sprintf("%v", value), nil
 	}
 }
 

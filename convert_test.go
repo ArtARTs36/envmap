@@ -1,6 +1,7 @@
 package envmap
 
 import (
+	"encoding/base64"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ func TestConvert(t *testing.T) {
 		EmptyField    string            `env:"EMPTY_FIELD"`
 		RequiredField int               `env:"REQUIRED_FIELD,required"`
 		UserMap       map[string]string `env:"USER_MAP"`
+		Marshalling   marshallingString `env:"MARSHALING"`
 	}
 
 	cases := []struct {
@@ -51,12 +53,14 @@ func TestConvert(t *testing.T) {
 				UserMap: map[string]string{
 					"id-1": "ab",
 				},
+				Marshalling: "test",
 			},
 			Expected: map[string]string{
 				"APP_MODE":           "prod",
 				"APP_DB_TIMEOUT":     "1s",
 				"APP_REQUIRED_FIELD": "3",
 				"APP_USER_MAP":       "id-1:ab",
+				"APP_MARSHALING":     "dGVzdA==",
 			},
 			Opts: []Opt{
 				WithPrefix("APP_"),
@@ -93,7 +97,17 @@ func TestValueToString(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.Title, func(t *testing.T) {
-			assert.Equal(t, c.Expected, valueToString(c.Input))
+			v, err := valueToString(c.Input)
+			require.NoError(t, err)
+
+			assert.Equal(t, c.Expected, v)
 		})
 	}
+}
+
+type marshallingString string
+
+func (u marshallingString) MarshalText() ([]byte, error) {
+	encoded := base64.StdEncoding.EncodeToString([]byte(u))
+	return []byte(encoded), nil
 }
