@@ -133,7 +133,7 @@ func valueToString(value interface{}) (string, error) {
 				if err != nil {
 					return "", err
 				}
-				mv, err := valueToString(iter.Value())
+				mv, err := valueToString(iter.Value().Interface())
 				if err != nil {
 					return "", err
 				}

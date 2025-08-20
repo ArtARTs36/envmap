@@ -15,12 +15,13 @@ func TestConvert(t *testing.T) {
 	}
 
 	type testCfg1 struct {
-		Mode          string            `env:"MODE"`
-		DB            dbCfg1            `envPrefix:"DB_"`
-		EmptyField    string            `env:"EMPTY_FIELD"`
-		RequiredField int               `env:"REQUIRED_FIELD,required"`
-		UserMap       map[string]string `env:"USER_MAP"`
-		Marshalling   marshallingString `env:"MARSHALING"`
+		Mode           string                       `env:"MODE"`
+		DB             dbCfg1                       `envPrefix:"DB_"`
+		EmptyField     string                       `env:"EMPTY_FIELD"`
+		RequiredField  int                          `env:"REQUIRED_FIELD,required"`
+		UserMap        map[string]string            `env:"USER_MAP"`
+		Marshalling    marshallingString            `env:"MARSHALING"`
+		MarshallingMap map[string]marshallingString `env:"MARSHALING_MAP"`
 	}
 
 	cases := []struct {
@@ -54,6 +55,9 @@ func TestConvert(t *testing.T) {
 					"id-1": "ab",
 				},
 				Marshalling: "test",
+				MarshallingMap: map[string]marshallingString{
+					"k1": "v1",
+				},
 			},
 			Expected: map[string]string{
 				"APP_MODE":           "prod",
@@ -61,6 +65,7 @@ func TestConvert(t *testing.T) {
 				"APP_REQUIRED_FIELD": "3",
 				"APP_USER_MAP":       "id-1:ab",
 				"APP_MARSHALING":     "dGVzdA==",
+				"APP_MARSHALING_MAP": "k1:djE=",
 			},
 			Opts: []Opt{
 				WithPrefix("APP_"),
