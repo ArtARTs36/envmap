@@ -109,6 +109,18 @@ func valueToString(value interface{}) string {
 
 		return strings.Join(vs, ",")
 	default:
+		if reflect.ValueOf(value).Kind() == reflect.Map {
+			rv := reflect.ValueOf(value)
+			iter := rv.MapRange()
+
+			vs := make([]string, 0)
+			for iter.Next() {
+				vs = append(vs, fmt.Sprintf("%s:%s", valueToString(iter.Key()), valueToString(iter.Value())))
+			}
+
+			return strings.Join(vs, ",")
+		}
+
 		return fmt.Sprintf("%v", value)
 	}
 }
