@@ -85,17 +85,21 @@ func TestConvert(t *testing.T) {
 func TestValueToString(t *testing.T) {
 	cases := []struct {
 		Title    string
-		Input    interface{}
+		Input    *value
 		Expected string
 	}{
 		{
-			Title:    "time.Duration: filled",
-			Input:    time.Second,
+			Title: "time.Duration: filled",
+			Input: &value{
+				value: time.Second,
+			},
 			Expected: "1s",
 		},
 		{
-			Title:    "time.Duration: zero",
-			Input:    0 * time.Second,
+			Title: "time.Duration: zero",
+			Input: &value{
+				value: 0 * time.Second,
+			},
 			Expected: "",
 		},
 	}

@@ -1,13 +1,9 @@
 package envmap
 
 import (
-	"encoding"
 	"fmt"
-	"reflect"
-	"strings"
-	"time"
-
 	"github.com/fatih/structtag"
+	"reflect"
 )
 
 func MustConvert(v interface{}, opt ...Opt) map[string]string {
@@ -58,7 +54,6 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 			}
 		} else {
 			envTagValue := field.Tag.Get("env")
-
 			if envTagValue == "" {
 				continue
 			}
@@ -75,77 +70,22 @@ func convert(v interface{}, prefix string, emap *envMap) error {
 
 			envKey := innerPrefix + envTag.Name
 
-			value, err := valueToString(rv.Field(i).Interface())
+			val, err := valueToString(&value{
+				value: rv.Field(i).Interface(),
+				tags:  tags,
+			})
 			if err != nil {
 				return fmt.Errorf("converting field %s: %v", field.Name, err)
 			}
-			if value == "" {
+			if val == "" {
 				continue
 			}
 
-			emap.add(envKey, fmt.Sprintf("%v", value))
+			emap.add(envKey, fmt.Sprintf("%v", val))
 		}
 	}
 
 	return nil
-}
-
-func valueToString(value interface{}) (string, error) {
-	switch v := value.(type) {
-	case encoding.TextMarshaler:
-		text, err := v.MarshalText()
-		if err != nil {
-			return "", err
-		}
-		return string(text), nil
-	case int, int32, int64, uint, uint32, uint64, float32, float64:
-		if v == 0 {
-			return "", nil
-		}
-		return fmt.Sprintf("%v", v), nil
-	case time.Duration:
-		if v == 0 {
-			return "", nil
-		}
-
-		return v.String(), nil
-	case []string:
-		return strings.Join(v, ","), nil
-	case []interface{}:
-		vs := make([]string, len(v))
-		for i := range v {
-			var err error
-			vs[i], err = valueToString(v[i])
-			if err != nil {
-				return "", err
-			}
-		}
-
-		return strings.Join(vs, ","), nil
-	default:
-		if reflect.ValueOf(value).Kind() == reflect.Map {
-			rv := reflect.ValueOf(value)
-			iter := rv.MapRange()
-
-			vs := make([]string, 0)
-			for iter.Next() {
-				mk, err := valueToString(iter.Key())
-				if err != nil {
-					return "", err
-				}
-				mv, err := valueToString(iter.Value().Interface())
-				if err != nil {
-					return "", err
-				}
-
-				vs = append(vs, fmt.Sprintf("%s:%s", mk, mv))
-			}
-
-			return strings.Join(vs, ","), nil
-		}
-
-		return fmt.Sprintf("%v", value), nil
-	}
 }
 
 type envMap struct {
