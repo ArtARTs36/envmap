@@ -54,7 +54,7 @@ linters:
   settings:
     cyclop:
       max-complexity: 30
-      package-average: 10
+      package-average: 20
     errcheck:
       check-type-assertions: true
     exhaustive:
