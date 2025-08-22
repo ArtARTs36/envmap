@@ -15,6 +15,8 @@ func TestConvert(t *testing.T) {
 	}
 
 	type testCfg1 struct {
+		Slice          []string                     `env:"SLICE"`
+		SliceSep       []string                     `env:"SLICE_SEP" envSeparator:"|"`
 		Mode           string                       `env:"MODE"`
 		DB             dbCfg1                       `envPrefix:"DB_"`
 		EmptyField     string                       `env:"EMPTY_FIELD"`
@@ -46,7 +48,9 @@ func TestConvert(t *testing.T) {
 		{
 			Title: "Filled application config",
 			Config: testCfg1{
-				Mode: "prod",
+				Slice:    []string{"1", "2"},
+				SliceSep: []string{"1", "2"},
+				Mode:     "prod",
 				DB: dbCfg1{
 					Timeout: time.Second,
 				},
@@ -60,6 +64,8 @@ func TestConvert(t *testing.T) {
 				},
 			},
 			Expected: map[string]string{
+				"APP_SLICE":          "1,2",
+				"APP_SLICE_SEP":      "1|2",
 				"APP_MODE":           "prod",
 				"APP_DB_TIMEOUT":     "1s",
 				"APP_REQUIRED_FIELD": "3",

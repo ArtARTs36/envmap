@@ -15,6 +15,14 @@ type value struct {
 	tags  *structtag.Tags
 }
 
+func (v *value) sliceSeparator() string {
+	sep, err := v.tags.Get("envSeparator")
+	if err != nil {
+		return ","
+	}
+	return sep.Name
+}
+
 func valueToString(val *value) (string, error) {
 	switch v := val.value.(type) {
 	case encoding.TextMarshaler:
@@ -34,7 +42,7 @@ func valueToString(val *value) (string, error) {
 		}
 		return v.String(), nil
 	case []string:
-		return strings.Join(v, ","), nil
+		return strings.Join(v, val.sliceSeparator()), nil
 	case []interface{}:
 		vs := make([]string, len(v))
 		for i := range v {
@@ -46,7 +54,7 @@ func valueToString(val *value) (string, error) {
 				return "", err
 			}
 		}
-		return strings.Join(vs, ","), nil
+		return strings.Join(vs, val.sliceSeparator()), nil
 	default:
 		if reflect.ValueOf(val.value).Kind() == reflect.Map {
 			mv, err := resolveMapValue(val)
