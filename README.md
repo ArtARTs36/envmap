@@ -8,6 +8,12 @@ This library converts environment configuration structure to `map[string]string`
 
 **envmap** does the reverse of [caarlos0/env](https://github.com/caarlos0/env), which converts environment variables into a Go structure.
 
+**Supported tags**
+- `env`
+- `envPrefix`
+- `envSeparator`
+- `envKeyValSeparator`
+
 Usage example:
 
 ```go
