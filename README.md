@@ -4,7 +4,9 @@
 go get github.com/artarts36/envmap
 ```
 
-This library converts configuration structure to map[string]string.
+This library converts environment configuration structure to `map[string]string`.
+
+**envmap** does the reverse of [caarlos0/env](https://github.com/caarlos0/env), which converts environment variables into a Go structure.
 
 Usage example:
 
