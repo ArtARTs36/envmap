@@ -15,10 +15,18 @@ type value struct {
 	tags  *structtag.Tags
 }
 
-func (v *value) sliceSeparator() string {
+func (v *value) valSeparator() string {
 	sep, err := v.tags.Get("envSeparator")
 	if err != nil {
 		return ","
+	}
+	return sep.Name
+}
+
+func (v *value) keySeparator() string {
+	sep, err := v.tags.Get("envKeyValSeparator")
+	if err != nil {
+		return ":"
 	}
 	return sep.Name
 }
@@ -42,7 +50,7 @@ func valueToString(val *value) (string, error) {
 		}
 		return v.String(), nil
 	case []string:
-		return strings.Join(v, val.sliceSeparator()), nil
+		return strings.Join(v, val.valSeparator()), nil
 	case []interface{}:
 		vs := make([]string, len(v))
 		for i := range v {
@@ -54,7 +62,7 @@ func valueToString(val *value) (string, error) {
 				return "", err
 			}
 		}
-		return strings.Join(vs, val.sliceSeparator()), nil
+		return strings.Join(vs, val.valSeparator()), nil
 	default:
 		if reflect.ValueOf(val.value).Kind() == reflect.Map {
 			mv, err := resolveMapValue(val)
@@ -86,8 +94,8 @@ func resolveMapValue(val *value) (string, error) {
 			return "", err
 		}
 
-		vs = append(vs, fmt.Sprintf("%s:%s", mk, mv))
+		vs = append(vs, fmt.Sprintf("%s%s%s", mk, val.keySeparator(), mv))
 	}
 
-	return strings.Join(vs, ","), nil
+	return strings.Join(vs, val.valSeparator()), nil
 }

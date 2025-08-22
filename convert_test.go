@@ -24,6 +24,7 @@ func TestConvert(t *testing.T) {
 		UserMap        map[string]string            `env:"USER_MAP"`
 		Marshalling    marshallingString            `env:"MARSHALING"`
 		MarshallingMap map[string]marshallingString `env:"MARSHALING_MAP"`
+		MapSep         map[string]string            `env:"MAP_SEP" envKeyValSeparator:"-" envSeparator:";"`
 	}
 
 	cases := []struct {
@@ -62,6 +63,10 @@ func TestConvert(t *testing.T) {
 				MarshallingMap: map[string]marshallingString{
 					"k1": "v1",
 				},
+				MapSep: map[string]string{
+					"a": "1",
+					"b": "2",
+				},
 			},
 			Expected: map[string]string{
 				"APP_SLICE":          "1,2",
@@ -72,6 +77,7 @@ func TestConvert(t *testing.T) {
 				"APP_USER_MAP":       "id-1:ab",
 				"APP_MARSHALING":     "dGVzdA==",
 				"APP_MARSHALING_MAP": "k1:djE=",
+				"APP_MAP_SEP":        "a-1;b-2",
 			},
 			Opts: []Opt{
 				WithPrefix("APP_"),
